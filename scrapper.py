@@ -9,15 +9,19 @@ longitud_minima_parrafo = 50
 
 for id in range(1000):
   try:
-
+    #Page to scrap
     page = requests.get("https://todorelatos.com/relato/" + str(id) + '/')
 
     soup = BeautifulSoup(page.content, 'html.parser')
+    
+    #Division on paragrafs
     divided_soup = str(soup).split('<p align="justify">')
     parrafos = divided_soup[1:-1]
+    
     #Append last paragraf
     parrafos.append(divided_soup[-1].split('</div>')[0])
     
+    #Write in bbdd
     counter_parrafos = 1
     for parrafo in parrafos:
       if len(parrafo) > longitud_minima_parrafo:
