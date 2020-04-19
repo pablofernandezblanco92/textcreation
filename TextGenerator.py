@@ -1,6 +1,8 @@
-import gpt_2_simple as gpt2
+#import gpt_2_simple as gpt2
 import os
 import requests
+from Helpers.DatabaseAccessor import DatabaseAccessor
+import pymongo
 
 # Base model definition
 MODEL_NAME = "124M"
@@ -30,10 +32,27 @@ def generate(session):
     gpt2.load_gpt2(session, model_name=MODEL_NAME)  # No needed if you has executed "fine training"
     gpt2.generate(session)
 
+def database_connect():
+    database = DatabaseAccessor('mongodb://localhost:27017/', 'test', 'testparrafos')
+    database.connect()
+    return database
+
+def get_collection(database):
+    return database.get_gollection().find({})
+
+def write_txt_to_train(text, output_file_name = 'train.txt'):
+    output_file = open(output_file_name, 'w')
+    for paragraph in text:
+        output_file.write(paragraph['texto'] + '\n')
+    output_file.close()
+
+database = database_connect()
+collection = get_collection(database)
+write_txt_to_train(collection)
 
 download_model()
-download_train_text("shakespeare.txt")
+download_train_text("train.txt")
 
 sess = gpt2.start_tf_sess()
-fine_train(sess, "shakespeare.txt")
+fine_train(sess, "train.txt")
 generate(sess)

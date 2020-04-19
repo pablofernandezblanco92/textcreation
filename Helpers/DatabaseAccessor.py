@@ -21,3 +21,6 @@ class DatabaseAccessor:
 
     def insert(self, object_item):
         self.__collection.insert_one(object_item)
+
+    def get_gollection(self):
+        return self.__collection
