@@ -7,33 +7,38 @@ database = dbClient["test"]
 collection = database["testparrafos"]
 minimum_paragraph_length = 50
 
-for id in range(1000):
-  try:
+for relato_id in range(50):
     # Page to scrap
-    page = requests.get("https://todorelatos.com/relato/" + str(id) + '/')
+    page = requests.get("https://todorelatos.com/relato/" + str(relato_id) + '/')
     soup = BeautifulSoup(page.content, 'html.parser')
-    
-    # Division on paragraphs
-    divided_soup = str(soup).split('<p align="justify">')
-    paragraphs = divided_soup[1:-1]
-    
-    # Append last paragraphs
-    paragraphs.append(divided_soup[-1].split('</div>')[0])
-    
+
+    # Find "relato" container
+    div_relato = soup.find(id="relato")
+
+    # Check if we have found something. Otherwise just jump to the next "relato"
+    if div_relato is None:
+        print("Relato #" + str(relato_id) + ' was not found')
+        continue
+
+    # Get all items paragraphs
+    div_relato_paragraph = div_relato.find_all("p")
+
+    # Convert the html to plain text
+    paragraphs_text = []
+    for paragraph in div_relato_paragraph:
+        paragraphs_text.append(paragraph.getText())
+
     # Write in database
     paragraph_counter = 1
-    for paragraph in paragraphs:
-      if len(paragraph) > minimum_paragraph_length:
-        paragraph_text = paragraph.split('</p>')[0]
-        table_entry = {
-          "id": str(id),
-          "paragraph": str(paragraph_counter),
-          "text": paragraph_text
-        }
-        x = collection.insert_one(table_entry)
-        paragraph_counter += 1
-  except:
-    pass
-    print(str(id) + ' failed')
-    
+    for paragraph in paragraphs_text:
+        if len(paragraph) > minimum_paragraph_length:
+            paragraph_text = paragraph.split('</p>')[0]
+            table_entry = {
+                "id": str(relato_id),
+                "paragraph": str(paragraph_counter),
+                "text": paragraph_text
+            }
+            x = collection.insert_one(table_entry)
+            paragraph_counter += 1
+
 print('done')
