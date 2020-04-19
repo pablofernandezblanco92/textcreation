@@ -1,35 +1,35 @@
 from bs4 import BeautifulSoup
 import requests
 from DatabaseAccessor import DatabaseAccessor
+from RelatoScrapper import RelatoScrapper
 
-minimum_paragraph_length = 50
+# Define constants
+MINIMUM_PARAGRAPH_LENGTH = 50
+
+# Start Database Connection
 da = DatabaseAccessor("mongodb://localhost:27017/", "test", "testparrafos")
 da.connect()
+
+# Iterate over all the "relatos"
 for relato_id in range(50):
     # Page to scrap
-    page = requests.get("https://todorelatos.com/relato/" + str(relato_id) + '/')
-    soup = BeautifulSoup(page.content, 'html.parser')
-
-    # Find "relato" container
-    div_relato = soup.find(id="relato")
+    scrapper = RelatoScrapper("https://todorelatos.com/relato/" + str(relato_id) + '/')
+    scrapper.obtain_html()
 
     # Check if we have found something. Otherwise just jump to the next "relato"
-    if div_relato is None:
+    if not scrapper.is_valid():
         print("Relato #" + str(relato_id) + ' was not found')
         continue
+    else:
+        print("Relato #" + str(relato_id) + ' found. Starting scrapping...')
 
-    # Get all items paragraphs
-    div_relato_paragraph = div_relato.find_all("p")
-
-    # Convert the html to plain text
-    paragraphs_text = []
-    for paragraph in div_relato_paragraph:
-        paragraphs_text.append(paragraph.getText())
+    # Start paragraph scrapping
+    scrapper.obtain_paragraphs()
 
     # Write in database
     paragraph_counter = 1
-    for paragraph in paragraphs_text:
-        if len(paragraph) > minimum_paragraph_length:
+    for paragraph in scrapper.transform_paragraphs_to_plain_text():
+        if len(paragraph) > MINIMUM_PARAGRAPH_LENGTH:
             paragraph_text = paragraph.split('</p>')[0]
             da.insert({
                 "id": str(relato_id),
