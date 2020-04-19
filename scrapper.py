@@ -1,5 +1,5 @@
-from DatabaseAccessor import DatabaseAccessor
-from RelatoScrapper import RelatoScrapper
+from Helpers.DatabaseAccessor import DatabaseAccessor
+from Helpers.RelatoScrapper import RelatoScrapper
 
 # Define constants
 MINIMUM_PARAGRAPH_LENGTH = 50
