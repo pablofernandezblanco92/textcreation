@@ -1,5 +1,3 @@
-from bs4 import BeautifulSoup
-import requests
 from DatabaseAccessor import DatabaseAccessor
 from RelatoScrapper import RelatoScrapper
 
