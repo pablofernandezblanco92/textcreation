@@ -2,36 +2,38 @@ from bs4 import BeautifulSoup
 import pymongo
 import requests
 
-myclient = pymongo.MongoClient("mongodb://localhost:27017/")
-mydb = myclient["test"]
-mycol = mydb["testparrafos"]
-longitud_minima_parrafo = 50
+dbClient = pymongo.MongoClient("mongodb://localhost:27017/")
+database = dbClient["test"]
+collection = database["testparrafos"]
+minimum_paragraph_length = 50
 
 for id in range(1000):
   try:
-    #Page to scrap
+    # Page to scrap
     page = requests.get("https://todorelatos.com/relato/" + str(id) + '/')
-
     soup = BeautifulSoup(page.content, 'html.parser')
     
-    #Division on paragrafs
+    # Division on paragraphs
     divided_soup = str(soup).split('<p align="justify">')
-    parrafos = divided_soup[1:-1]
+    paragraphs = divided_soup[1:-1]
     
-    #Append last paragraf
-    parrafos.append(divided_soup[-1].split('</div>')[0])
+    # Append last paragraphs
+    paragraphs.append(divided_soup[-1].split('</div>')[0])
     
-    #Write in bbdd
-    counter_parrafos = 1
-    for parrafo in parrafos:
-      if len(parrafo) > longitud_minima_parrafo:
-        texto_parrafo = parrafo.split('</p>')[0]
-        mydict = { "id": str(id), "paragrafo": str(counter_parrafos), "texto": texto_parrafo }
-        x = mycol.insert_one(mydict)
-        counter_parrafos += 1
-
+    # Write in database
+    paragraph_counter = 1
+    for paragraph in paragraphs:
+      if len(paragraph) > minimum_paragraph_length:
+        paragraph_text = paragraph.split('</p>')[0]
+        table_entry = {
+          "id": str(id),
+          "paragraph": str(paragraph_counter),
+          "text": paragraph_text
+        }
+        x = collection.insert_one(table_entry)
+        paragraph_counter += 1
   except:
     pass
-    print(str(id) +' failed')
+    print(str(id) + ' failed')
     
 print('done')
