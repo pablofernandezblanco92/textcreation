@@ -29,9 +29,11 @@ for link in links_list:
     identifier += 1
 '''
 
-
 output_file = open('train.txt', 'w')
 for paragraph in da.get_gollection().find({}):
-    output_file.write(str(paragraph['text'].encode("utf-8")))
-    output_file.write("\n")
+    try:
+        output_file.write(paragraph['text'])
+        output_file.write("\n")
+    except:
+        pass
 output_file.close()
