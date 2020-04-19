@@ -1,12 +1,10 @@
 from bs4 import BeautifulSoup
-import pymongo
 import requests
+from DatabaseAccessor import DatabaseAccessor
 
-dbClient = pymongo.MongoClient("mongodb://localhost:27017/")
-database = dbClient["test"]
-collection = database["testparrafos"]
 minimum_paragraph_length = 50
-
+da = DatabaseAccessor("mongodb://localhost:27017/", "test", "testparrafos")
+da.connect()
 for relato_id in range(50):
     # Page to scrap
     page = requests.get("https://todorelatos.com/relato/" + str(relato_id) + '/')
@@ -33,12 +31,12 @@ for relato_id in range(50):
     for paragraph in paragraphs_text:
         if len(paragraph) > minimum_paragraph_length:
             paragraph_text = paragraph.split('</p>')[0]
-            table_entry = {
+            da.insert({
                 "id": str(relato_id),
                 "paragraph": str(paragraph_counter),
                 "text": paragraph_text
-            }
-            x = collection.insert_one(table_entry)
+            })
             paragraph_counter += 1
 
+da.close()
 print('done')
